@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ProjectModuleManager">
-    <modules>
-      <module fileurl="file://$PROJECT_DIR$/saviewgo.iml" filepath="$PROJECT_DIR$/saviewgo.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android/saviewgo_android.iml" filepath="$PROJECT_DIR$/android/saviewgo_android.iml" />
-    </modules>
-  </component>
-</project>
