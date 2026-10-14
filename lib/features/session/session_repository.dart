@@ -9,21 +9,22 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:saviewgo/core/security/secure_storage.dart';
 import 'package:saviewgo/features/session/session_context.dart';
 
+
 final sessionRepositoryProvider = Provider<SessionRepository>(
   (ref) => SessionRepository(ref.read(secureStorageProvider)),
 );
-
+ 
 class SessionRepository {
   SessionRepository(this._storage);
-
+ 
   final FlutterSecureStorage _storage;
-
+ 
   FirebaseFunctions get _functions => FirebaseFunctions.instance;
-
+ 
   Future<DeviceSummary> readDevice() async {
     final package = await PackageInfo.fromPlatform();
     final plugin = DeviceInfoPlugin();
-
+ 
     if (Platform.isAndroid) {
       final android = await plugin.androidInfo;
       return DeviceSummary(
@@ -47,22 +48,35 @@ class SessionRepository {
       appVersion: package.version,
     );
   }
-
-  /// Sin autenticación: se muestra antes de iniciar sesión.
-  Future<NetworkContext> fetchNetworkContext() async {
-    final result =
-        await _functions.httpsCallable('getSessionContext').call<Object?>();
-    return NetworkContext.fromMap(result.data);
-  }
-
-  /// Registra el ingreso en admin_sessions (auditoría).
+ 
+  /// Registra el ingreso en admin_sessions (auditoría). Solo se llama
+  /// al iniciar sesión con contraseña; los desbloqueos son locales.
   Future<NetworkContext> registerSession(DeviceSummary device) async {
     final result = await _functions
         .httpsCallable('registerSession')
         .call<Object?>(device.toMap());
     return NetworkContext.fromMap(result.data);
   }
-
+ 
+  Future<RegisteredSession?> readRegisteredSession() async {
+    final raw = await _storage.read(key: StorageKeys.registeredSession);
+    if (raw == null) return null;
+    try {
+      return RegisteredSession.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {
+      return null;
+    }
+  }
+ 
+  Future<void> saveRegisteredSession(RegisteredSession session) =>
+      _storage.write(
+        key: StorageKeys.registeredSession,
+        value: jsonEncode(session.toJson()),
+      );
+ 
+  Future<void> clearRegisteredSession() =>
+      _storage.delete(key: StorageKeys.registeredSession);
+ 
   Future<LastAccess?> readLastAccess() async {
     final raw = await _storage.read(key: StorageKeys.lastAccess);
     if (raw == null) return null;
@@ -72,12 +86,12 @@ class SessionRepository {
       return null;
     }
   }
-
+ 
   Future<void> saveLastAccess(LastAccess access) => _storage.write(
         key: StorageKeys.lastAccess,
         value: jsonEncode(access.toJson()),
       );
-
+ 
   static String _deviceName(String manufacturer, String model) {
     if (manufacturer.isEmpty ||
         model.toLowerCase().startsWith(manufacturer.toLowerCase())) {
@@ -87,3 +101,4 @@ class SessionRepository {
     return '$brand $model';
   }
 }
+ 

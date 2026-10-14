@@ -1,41 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:saviewgo/core/security/biometric_service.dart';
-import 'package:saviewgo/core/security/secure_storage.dart';
 
 final biometricAvailableProvider = FutureProvider.autoDispose<bool>(
   (ref) => ref.read(biometricServiceProvider).isAvailable(),
 );
-
-/// Bloqueo con huella sobre una sesión de Firebase que sigue abierta.
-/// El estado indica si la app ya se desbloqueó en esta ejecución.
+ 
+/// Candado local del dispositivo sobre una sesión de Firebase que sigue
+/// abierta. No llama a Functions ni a Firestore: solo huella, rostro o
+/// PIN del dispositivo. El estado indica si la app está desbloqueada.
 final appLockProvider =
     NotifierProvider<AppLockController, bool>(AppLockController.new);
-
+ 
 class AppLockController extends Notifier<bool> {
+  /// true solo tras un inicio de sesión con contraseña: es el único
+  /// momento en que se registra la sesión en el servidor.
+  bool _needsRegistration = false;
+ 
   @override
   bool build() => false;
-
-  /// La preferencia se guarda con el uid, para que no se aplique a
-  /// otra cuenta que inicie sesión en el mismo dispositivo.
-  Future<bool> isEnabledFor(String uid) async =>
-      await ref.read(secureStorageProvider).read(key: StorageKeys.biometricUid) ==
-      uid;
-
-  Future<bool> enableFor(String uid) async {
-    final confirmed = await ref
-        .read(biometricServiceProvider)
-        .authenticate('Confirma para activar el ingreso con huella');
-    if (confirmed) {
-      await ref
-          .read(secureStorageProvider)
-          .write(key: StorageKeys.biometricUid, value: uid);
-    }
-    return confirmed;
-  }
-
-  Future<void> disable() =>
-      ref.read(secureStorageProvider).delete(key: StorageKeys.biometricUid);
-
+ 
   Future<bool> unlock() async {
     final ok = await ref
         .read(biometricServiceProvider)
@@ -43,8 +26,22 @@ class AppLockController extends Notifier<bool> {
     if (ok) state = true;
     return ok;
   }
-
-  void markUnlocked() => state = true;
-
-  void lock() => state = false;
+ 
+  void markLoggedIn() {
+    _needsRegistration = true;
+    state = true;
+  }
+ 
+  /// Devuelve si hay que registrar la sesión y limpia la marca.
+  bool consumeRegistration() {
+    final pending = _needsRegistration;
+    _needsRegistration = false;
+    return pending;
+  }
+ 
+  void lock() {
+    _needsRegistration = false;
+    state = false;
+  }
 }
+ 

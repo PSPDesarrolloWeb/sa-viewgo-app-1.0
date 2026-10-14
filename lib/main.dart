@@ -10,5 +10,13 @@ Future<void> main() async {
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await initFirebase();
 
-  runApp(const ProviderScope(child: SAViewGoApp()));
+  // Sin reintentos automáticos: cada pantalla maneja sus errores y
+  // ofrece reintentar. Con reintentos, un error de permisos dejaba
+  // los providers cargando para siempre.
+  runApp(
+    ProviderScope(
+      retry: (_, __) => null,
+      child: const SAViewGoApp(),
+    ),
+  );
 }

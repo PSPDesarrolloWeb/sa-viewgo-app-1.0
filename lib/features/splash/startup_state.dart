@@ -2,7 +2,7 @@ enum StartupStep {
   session('Verificando sesión'),
   permissions('Validando permisos'),
   cities('Sincronizando ciudades'),
-  register('Registrando sesión');
+  register('Confirmando sesión');
 
   const StartupStep(this.label);
   final String label;

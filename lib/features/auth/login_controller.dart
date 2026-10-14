@@ -3,51 +3,40 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:saviewgo/features/auth/app_lock_controller.dart';
 import 'package:saviewgo/features/auth/auth_repository.dart';
 
+
 class LoginState {
   const LoginState({this.loading = false, this.error, this.notice});
-
+ 
   final bool loading;
   final String? error;
-
+ 
   /// Mensaje informativo, por ejemplo tras pedir el enlace de contraseña.
   final String? notice;
 }
-
+ 
 final loginControllerProvider =
     NotifierProvider.autoDispose<LoginController, LoginState>(
   LoginController.new,
 );
-
+ 
 class LoginController extends Notifier<LoginState> {
   @override
   LoginState build() => const LoginState();
-
+ 
   /// Solo inicia sesión. Rol, ciudad y registro de la sesión los valida
   /// el splash, que es a donde se navega después.
-  Future<bool> submit({
-    required String email,
-    required String password,
-    required bool enableBiometric,
-  }) async {
+  Future<bool> submit({required String email, required String password}) async {
     state = const LoginState(loading: true);
     try {
       await ref.read(authRepositoryProvider).signIn(email, password);
-
-      final lock = ref.read(appLockProvider.notifier);
-      final uid = FirebaseAuth.instance.currentUser!.uid;
-      if (enableBiometric) {
-        await lock.enableFor(uid);
-      } else {
-        await lock.disable();
-      }
-      lock.markUnlocked();
+      ref.read(appLockProvider.notifier).markLoggedIn();
       return true;
     } catch (error) {
       if (ref.mounted) state = LoginState(error: authErrorMessage(error));
       return false;
     }
   }
-
+ 
   Future<void> requestPasswordReset(String email) async {
     state = const LoginState(loading: true);
     try {
@@ -70,3 +59,4 @@ class LoginController extends Notifier<LoginState> {
     }
   }
 }
+ 

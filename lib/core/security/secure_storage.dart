@@ -5,8 +5,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// solo preferencias y datos de la última sesión.
 abstract final class StorageKeys {
   static const themeMode = 'theme_mode';
-  static const biometricUid = 'biometric_uid';
   static const lastAccess = 'last_access';
+  static const registeredSession = 'registered_session';
 }
 
 final secureStorageProvider = Provider<FlutterSecureStorage>(

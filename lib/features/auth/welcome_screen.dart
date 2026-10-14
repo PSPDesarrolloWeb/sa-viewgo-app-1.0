@@ -19,40 +19,71 @@ import 'package:saviewgo/features/auth/login_sheet.dart';
 import 'package:saviewgo/features/session/session_context.dart';
 import 'package:saviewgo/features/session/session_providers.dart';
 
+
 /// Inicio de SAViewGo. Sin sesión, lleva al formulario de acceso.
-/// Con sesión abierta y huella activada funciona como pantalla de
-/// bloqueo: pide la huella al abrir y el formulario permite entrar
-/// con contraseña o con otra cuenta.
+/// Con sesión abierta funciona como pantalla de bloqueo. Nunca pide
+/// nada por su cuenta: el usuario elige entrar con la huella (botón)
+/// o con contraseña (hoja de acceso).
 class WelcomeScreen extends ConsumerStatefulWidget {
   const WelcomeScreen({super.key});
-
+ 
   @override
   ConsumerState<WelcomeScreen> createState() => _WelcomeScreenState();
 }
-
-class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
+ 
+class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
+    with TickerProviderStateMixin {
   /// Altura mínima para mostrar los chips de último acceso y soporte.
   static const _chipsMinHeight = 640.0;
-
+ 
   /// Altura mínima para mostrar las funciones con su descripción; por
   /// debajo se muestran solo los íconos.
   static const _featureListMinHeight = 740.0;
-
+ 
   bool get _locked => FirebaseAuth.instance.currentUser != null;
-
+ 
+  /// Entrada escalonada de los bloques al abrir la pantalla.
+  late final AnimationController _entry = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+  );
+ 
+  /// Movimiento continuo y sutil: la ruta avanza y el punto de
+  /// "acceso restringido" late como un indicador de grabación.
+  late final AnimationController _ambient = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1600),
+  );
+ 
   @override
   void initState() {
     super.initState();
-    if (_locked) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _unlock());
+    _entry.forward();
+    _ambient.repeat();
+  }
+ 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Respeta la opción del sistema de reducir animaciones.
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _entry.value = 1;
+      _ambient.stop();
     }
   }
-
+ 
+  @override
+  void dispose() {
+    _entry.dispose();
+    _ambient.dispose();
+    super.dispose();
+  }
+ 
   Future<void> _unlock() async {
     final ok = await ref.read(appLockProvider.notifier).unlock();
     if (ok && mounted) context.go(AppRoutes.splash);
   }
-
+ 
   /// Sin sesión no hay nada que desbloquear: se explica cómo activarla.
   void _explainBiometric() {
     ScaffoldMessenger.of(context)
@@ -61,25 +92,25 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
         const SnackBar(
           behavior: SnackBarBehavior.floating,
           content: Text(
-            'Ingresa una vez con tu contraseña y marca "Activar ingreso con huella".',
+            'Ingresa con tu contraseña la primera vez. Después podrás desbloquear con tu huella.',
           ),
         ),
       );
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final biometricAvailable =
         ref.watch(biometricAvailableProvider).value ?? false;
-
+ 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: ThemeConfig.getForegroundColorVG(context),
         body: Stack(
           children: [
-            const Positioned.fill(child: _Backdrop()),
+            Positioned.fill(child: _Backdrop(flow: _ambient)),
             SafeArea(
               child: LayoutBuilder(
                 builder: (context, constraints) => Padding(
@@ -87,38 +118,59 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const _TopBar(),
+                      _Reveal(animation: _entry, order: 0, child: const _TopBar()),
                       const SizedBox(height: 28),
-                      const _RestrictedBadge(),
+                      _Reveal(
+                        animation: _entry,
+                        order: 1,
+                        child: _RestrictedBadge(pulse: _ambient),
+                      ),
                       const SizedBox(height: 10),
-                      Text(
-                        'Supervisa ViewGo desde tu celular',
-                        style: ThemeConfig.getTextBold20(context).copyWith(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
-                          height: 1.15,
-                          letterSpacing: -0.5,
-                          color: ThemeConfig.getPrimaryColor(context),
+                      _Reveal(
+                        animation: _entry,
+                        order: 1,
+                        child: Text(
+                          'Supervisa ViewGo desde tu celular',
+                          style: ThemeConfig.getTextBold20(context).copyWith(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                            height: 1.15,
+                            letterSpacing: -0.5,
+                            color: ThemeConfig.getPrimaryColor(context),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 22),
-                      if (constraints.maxHeight >= _featureListMinHeight)
-                        const _FeatureList()
-                      else
-                        const _FeatureRow(),
+                      _Reveal(
+                        animation: _entry,
+                        order: 2,
+                        child: constraints.maxHeight >= _featureListMinHeight
+                            ? const _FeatureList()
+                            : const _FeatureRow(),
+                      ),
                       const SizedBox(height: 18),
-                      const _SessionCard(),
+                      _Reveal(animation: _entry, order: 3, child: const _SessionCard()),
                       Expanded(
                         child: constraints.maxHeight >= _chipsMinHeight
-                            ? const Center(child: _InfoChips())
+                            ? Center(
+                                child: _Reveal(
+                                  animation: _entry,
+                                  order: 4,
+                                  child: const _InfoChips(),
+                                ),
+                              )
                             : const SizedBox.shrink(),
                       ),
-                      _Actions(
-                        showBiometric: _locked || biometricAvailable,
-                        onBiometric: _locked ? _unlock : _explainBiometric,
+                      _Reveal(
+                        animation: _entry,
+                        order: 5,
+                        child: _Actions(
+                          showBiometric: _locked || biometricAvailable,
+                          onBiometric: _locked ? _unlock : _explainBiometric,
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      const _RecordedNotice(),
+                      _Reveal(animation: _entry, order: 6, child: const _RecordedNotice()),
                     ],
                   ),
                 ),
@@ -130,16 +182,53 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     );
   }
 }
-
+ 
+/* ─────────────────────────── Animación ─────────────────────────── */
+ 
+/// Aparece con un desvanecido y un leve desplazamiento hacia arriba,
+/// después de los bloques con [order] menor.
+class _Reveal extends StatelessWidget {
+  const _Reveal({
+    required this.animation,
+    required this.order,
+    required this.child,
+  });
+ 
+  final Animation<double> animation;
+  final int order;
+  final Widget child;
+ 
+  @override
+  Widget build(BuildContext context) {
+    final start = math.min(order * 0.1, 0.6);
+    final curve = Interval(start, start + 0.4, curve: Curves.easeOutCubic);
+ 
+    return AnimatedBuilder(
+      animation: animation,
+      child: child,
+      builder: (context, child) {
+        final t = curve.transform(animation.value);
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(0, 18 * (1 - t)),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+}
+ 
 /* ────────────────────────── Encabezado ────────────────────────── */
-
+ 
 class _TopBar extends ConsumerWidget {
   const _TopBar();
-
+ 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
+ 
     return Row(
       children: [
         Image.asset(AppImages.horizontalFull(context), height: 28),
@@ -162,10 +251,12 @@ class _TopBar extends ConsumerWidget {
     );
   }
 }
-
+ 
 class _RestrictedBadge extends StatelessWidget {
-  const _RestrictedBadge();
-
+  const _RestrictedBadge({required this.pulse});
+ 
+  final Animation<double> pulse;
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -177,12 +268,19 @@ class _RestrictedBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 7,
-            height: 7,
-            decoration: const BoxDecoration(
-              color: AppColors.error,
-              shape: BoxShape.circle,
+          AnimatedBuilder(
+            animation: pulse,
+            builder: (context, child) => Opacity(
+              opacity: 0.35 + 0.65 * (0.5 + 0.5 * math.cos(pulse.value * 2 * math.pi)),
+              child: child,
+            ),
+            child: Container(
+              width: 7,
+              height: 7,
+              decoration: const BoxDecoration(
+                color: AppColors.error,
+                shape: BoxShape.circle,
+              ),
             ),
           ),
           const SizedBox(width: 6),
@@ -196,12 +294,12 @@ class _RestrictedBadge extends StatelessWidget {
     );
   }
 }
-
+ 
 /* ─────────────────────────── Funciones ────────────────────────── */
-
+ 
 class _FeatureRow extends StatelessWidget {
   const _FeatureRow();
-
+ 
   @override
   Widget build(BuildContext context) {
     return const Row(
@@ -213,22 +311,22 @@ class _FeatureRow extends StatelessWidget {
     );
   }
 }
-
+ 
 /// Las tres funciones con su descripción, para pantallas altas.
 class _FeatureList extends StatelessWidget {
   const _FeatureList();
-
+ 
   static const _items = [
     (Icons.bar_chart_rounded, 'Indicadores', 'KPIs de negocios por ciudad'),
     (Icons.storefront_rounded, 'Negocios', 'Fichas, módulos y altas pendientes'),
     (Icons.notifications_none_rounded, 'Alertas', 'Pedidos, pagos y vencimientos'),
   ];
-
+ 
   @override
   Widget build(BuildContext context) {
     final ink = ThemeConfig.getPrimaryColor(context);
     final subtle = ThemeConfig.getSubtleTextColor(context);
-
+ 
     return Column(
       children: [
         for (final (icon, title, description) in _items)
@@ -271,13 +369,13 @@ class _FeatureList extends StatelessWidget {
     );
   }
 }
-
+ 
 class _Feature extends StatelessWidget {
   const _Feature(this.icon, this.label);
-
+ 
   final IconData icon;
   final String label;
-
+ 
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -301,23 +399,28 @@ class _Feature extends StatelessWidget {
     );
   }
 }
-
+ 
 /* ──────────────────────────── Sesión ──────────────────────────── */
-
+ 
 class _SessionCard extends ConsumerWidget {
   const _SessionCard();
-
+ 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final network = ref.watch(networkContextProvider);
+    // IP y ubicación se registran al iniciar con contraseña y se leen
+    // del dispositivo: abrir esta pantalla no llama al servidor.
+    final session = ref.watch(registeredSessionProvider);
     final device = ref.watch(deviceSummaryProvider);
-
-    String fromNetwork(String? Function(NetworkContext) pick) => network.when(
-          data: (value) => pick(value) ?? 'No disponible',
+ 
+    String fromSession(String? Function(RegisteredSession) pick) =>
+        session.when(
+          data: (value) => value == null
+              ? 'Se registra al ingresar'
+              : pick(value) ?? 'No disponible',
           loading: () => '…',
           error: (_, __) => 'No disponible',
         );
-
+ 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
       decoration: BoxDecoration(
@@ -329,12 +432,12 @@ class _SessionCard extends ConsumerWidget {
           _SessionRow(
             icon: Icons.public_rounded,
             label: 'IP',
-            value: fromNetwork((n) => n.ip),
+            value: fromSession((s) => s.ip),
           ),
           _SessionRow(
             icon: Icons.place_outlined,
             label: 'Ubicación',
-            value: fromNetwork((n) => n.locationLabel),
+            value: fromSession((s) => s.locationLabel),
           ),
           _SessionRow(
             icon: Icons.smartphone_rounded,
@@ -356,7 +459,7 @@ class _SessionCard extends ConsumerWidget {
     );
   }
 }
-
+ 
 class _SessionRow extends StatelessWidget {
   const _SessionRow({
     required this.icon,
@@ -365,17 +468,17 @@ class _SessionRow extends StatelessWidget {
     this.trailing,
     this.isLast = false,
   });
-
+ 
   final IconData icon;
   final String label;
   final String? value;
   final Widget? trailing;
   final bool isLast;
-
+ 
   @override
   Widget build(BuildContext context) {
     final subtle = ThemeConfig.getSubtleTextColor(context);
-
+ 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
@@ -411,35 +514,35 @@ class _SessionRow extends StatelessWidget {
     );
   }
 }
-
+ 
 /// Hora de Ecuador continental (UTC-5, sin horario de verano), sin
 /// depender de la zona configurada en el dispositivo.
 class _LiveClock extends StatefulWidget {
   const _LiveClock();
-
+ 
   @override
   State<_LiveClock> createState() => _LiveClockState();
 }
-
+ 
 class _LiveClockState extends State<_LiveClock> {
   static final _format = DateFormat('HH:mm:ss');
   late Timer _timer;
-
+ 
   DateTime get _ecuadorNow =>
       DateTime.now().toUtc().subtract(const Duration(hours: 5));
-
+ 
   @override
   void initState() {
     super.initState();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
   }
-
+ 
   @override
   void dispose() {
     _timer.cancel();
     super.dispose();
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Text(
@@ -451,16 +554,16 @@ class _LiveClockState extends State<_LiveClock> {
     );
   }
 }
-
+ 
 /* ───────────────────── Último acceso y soporte ───────────────────── */
-
+ 
 class _InfoChips extends ConsumerWidget {
   const _InfoChips();
-
+ 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lastAccess = ref.watch(lastAccessProvider);
-
+ 
     return Row(
       children: [
         Expanded(
@@ -486,10 +589,10 @@ class _InfoChips extends ConsumerWidget {
       ],
     );
   }
-
+ 
   static String _formatLastAccess(LastAccess? access) {
     if (access == null) return 'Primer acceso';
-
+ 
     final now = DateTime.now();
     final at = access.at;
     final days = DateTime(now.year, now.month, now.day)
@@ -503,7 +606,7 @@ class _InfoChips extends ConsumerWidget {
     return '$day, ${DateFormat('HH:mm').format(at)}';
   }
 }
-
+ 
 class _InfoChip extends StatelessWidget {
   const _InfoChip({
     required this.icon,
@@ -511,16 +614,16 @@ class _InfoChip extends StatelessWidget {
     required this.value,
     this.onTap,
   });
-
+ 
   final IconData icon;
   final String label;
   final String value;
   final VoidCallback? onTap;
-
+ 
   @override
   Widget build(BuildContext context) {
     final subtle = ThemeConfig.getSubtleTextColor(context);
-
+ 
     return Material(
       color: _Palette.glass(context),
       borderRadius: BorderRadius.circular(14),
@@ -559,16 +662,16 @@ class _InfoChip extends StatelessWidget {
     );
   }
 }
-
+ 
 /* ─────────────────────────── Acciones ─────────────────────────── */
-
+ 
 class _Actions extends StatelessWidget {
   const _Actions({required this.showBiometric, required this.onBiometric});
-
+ 
   /// Visible si el dispositivo tiene biometría o hay una sesión bloqueada.
   final bool showBiometric;
   final VoidCallback onBiometric;
-
+ 
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -613,14 +716,14 @@ class _Actions extends StatelessWidget {
     );
   }
 }
-
+ 
 class _RecordedNotice extends StatelessWidget {
   const _RecordedNotice();
-
+ 
   @override
   Widget build(BuildContext context) {
     final color = _Palette.warnText(context);
-
+ 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -634,24 +737,28 @@ class _RecordedNotice extends StatelessWidget {
     );
   }
 }
-
+ 
 /* ──────────────────────────── Fondo ───────────────────────────── */
-
+ 
 /// Manchas de color difuminadas y la ruta punteada de la app de
 /// clientes. Un solo filtro de desenfoque para todas las manchas.
 class _Backdrop extends StatelessWidget {
-  const _Backdrop();
-
+  const _Backdrop({required this.flow});
+ 
+  final Animation<double> flow;
+ 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final green = AppColors.primary.withValues(alpha: isDark ? 0.26 : 0.34);
     final orange = AppColors.secondary.withValues(alpha: isDark ? 0.14 : 0.16);
-
-    return RepaintBoundary(
-      child: Stack(
-        children: [
-          Positioned.fill(
+ 
+    return Stack(
+      children: [
+        // Capas separadas: la ruta se repinta en cada cuadro y las
+        // manchas difuminadas no, para no recalcular el desenfoque.
+        Positioned.fill(
+          child: RepaintBoundary(
             child: ImageFiltered(
               imageFilter: ImageFilter.blur(
                 sigmaX: 70,
@@ -667,26 +774,29 @@ class _Backdrop extends StatelessWidget {
               ),
             ),
           ),
-          Positioned.fill(
+        ),
+        Positioned.fill(
+          child: RepaintBoundary(
             child: CustomPaint(
               painter: _RoutePainter(
                 color: ThemeConfig.getPrimaryColor(context)
                     .withValues(alpha: 0.08),
+                flow: flow,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
-
+ 
 class _Blob extends StatelessWidget {
   const _Blob(this.size, this.color);
-
+ 
   final double size;
   final Color color;
-
+ 
   @override
   Widget build(BuildContext context) => Container(
         width: size,
@@ -694,20 +804,24 @@ class _Blob extends StatelessWidget {
         decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       );
 }
-
+ 
 /// Trazo curvo punteado, el mismo guiño a "ruta" del home de clientes.
 class _RoutePainter extends CustomPainter {
-  _RoutePainter({required this.color});
-
+  _RoutePainter({required this.color, required this.flow})
+      : super(repaint: flow);
+ 
   final Color color;
-
+ 
+  /// 0 → 1 desplaza los trazos una posición: la ruta "avanza".
+  final Animation<double> flow;
+ 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
-
+ 
     final path = Path()
       ..moveTo(-20, size.height * 0.24)
       ..quadraticBezierTo(
@@ -716,26 +830,29 @@ class _RoutePainter extends CustomPainter {
         size.width + 20,
         size.height * 0.30,
       );
-
+ 
     const dash = 6.0;
     const gap = 8.0;
     for (final metric in path.computeMetrics()) {
-      double distance = 0;
+      double distance = (flow.value - 1) * (dash + gap);
       while (distance < metric.length) {
-        final next = math.min(distance + dash, metric.length);
-        canvas.drawPath(metric.extractPath(distance, next), paint);
-        distance = next + gap;
+        final start = math.max(distance, 0.0);
+        final end = math.min(distance + dash, metric.length);
+        if (end > start) {
+          canvas.drawPath(metric.extractPath(start, end), paint);
+        }
+        distance += dash + gap;
       }
     }
   }
-
+ 
   @override
   bool shouldRepaint(covariant _RoutePainter oldDelegate) =>
-      oldDelegate.color != color;
+      oldDelegate.color != color || oldDelegate.flow != flow;
 }
-
+ 
 /* ─────────────────────────── Colores ──────────────────────────── */
-
+ 
 abstract final class _Palette {
   /// Superficie semitransparente para que el fondo se note detrás.
   static Color glass(BuildContext context) => ThemeConfig.getCustomColor(
@@ -743,23 +860,24 @@ abstract final class _Palette {
         AppColors.viewGoColorBGLight.withValues(alpha: 0.85),
         AppColors.viewGoColorBGDark.withValues(alpha: 0.7),
       );
-
+ 
   static Color warnBackground(BuildContext context) =>
       ThemeConfig.getCustomColor(
         context,
         AppColors.errorContainer,
         AppColors.darkErrorContainer,
       );
-
+ 
   static Color warnText(BuildContext context) => ThemeConfig.getCustomColor(
         context,
         AppColors.onErrorContainer,
         AppColors.errorContainer,
       );
-
+ 
   static Color accent(BuildContext context) => ThemeConfig.getCustomColor(
         context,
         AppColors.onPrimaryFixedVariant,
         AppColors.primary,
       );
 }
+ 

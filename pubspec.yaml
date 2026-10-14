@@ -52,6 +52,7 @@ dependencies:
   url_launcher: ^6.3.3
   flutter_localizations:
     sdk: flutter
+  salomon_bottom_bar: ^3.3.2
 
 dev_dependencies:
   flutter_test:

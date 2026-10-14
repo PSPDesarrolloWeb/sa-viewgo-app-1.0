@@ -7,11 +7,10 @@ final deviceSummaryProvider = FutureProvider<DeviceSummary>(
   (ref) => ref.read(sessionRepositoryProvider).readDevice(),
 );
 
-/// Sin reintentos automáticos: si la Function falla, la tarjeta
-/// muestra "No disponible" en vez de quedarse cargando.
-final networkContextProvider = FutureProvider.autoDispose<NetworkContext>(
-  (ref) => ref.read(sessionRepositoryProvider).fetchNetworkContext(),
-  retry: (_, __) => null,
+/// Lectura local: la sesión se registró al iniciar con contraseña.
+final registeredSessionProvider =
+    FutureProvider.autoDispose<RegisteredSession?>(
+  (ref) => ref.read(sessionRepositoryProvider).readRegisteredSession(),
 );
 
 final lastAccessProvider = FutureProvider.autoDispose<LastAccess?>(

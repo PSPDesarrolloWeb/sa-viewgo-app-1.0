@@ -6,9 +6,9 @@ import 'package:saviewgo/app/app_config.dart';
 import 'package:saviewgo/app/app_router.dart';
 import 'package:saviewgo/core/theme/colors.dart';
 import 'package:saviewgo/core/theme/theme_config.dart';
-import 'package:saviewgo/features/auth/app_lock_controller.dart';
 import 'package:saviewgo/features/auth/login_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 
 Future<void> showLoginSheet(BuildContext context) {
   return showModalBottomSheet<void>(
@@ -22,14 +22,14 @@ Future<void> showLoginSheet(BuildContext context) {
     builder: (_) => const LoginSheet(),
   );
 }
-
+ 
 Future<void> openSupportEmail() => launchUrl(
       Uri.parse(
         'mailto:${AppConfig.supportEmail}'
         '?subject=${Uri.encodeComponent('Soporte SAViewGo')}',
       ),
     );
-
+ 
 ButtonStyle primaryButtonStyle(BuildContext context) => FilledButton.styleFrom(
       backgroundColor: AppColors.primary,
       foregroundColor: AppColors.onPrimary,
@@ -37,61 +37,57 @@ ButtonStyle primaryButtonStyle(BuildContext context) => FilledButton.styleFrom(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       textStyle: ThemeConfig.getTextBold14(context),
     );
-
+ 
 Color _linkColor(BuildContext context) => ThemeConfig.getCustomColor(
       context,
       AppColors.primaryDark,
       AppColors.darkPrimary,
     );
-
+ 
 class LoginSheet extends ConsumerStatefulWidget {
   const LoginSheet({super.key});
-
+ 
   @override
   ConsumerState<LoginSheet> createState() => _LoginSheetState();
 }
-
+ 
 class _LoginSheetState extends ConsumerState<LoginSheet> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _obscure = true;
-  bool _enableBiometric = true;
-
+ 
   @override
   void initState() {
     super.initState();
     // En modo bloqueo ya hay una cuenta: se propone su correo.
     _email.text = FirebaseAuth.instance.currentUser?.email ?? '';
   }
-
+ 
   @override
   void dispose() {
     _email.dispose();
     _password.dispose();
     super.dispose();
   }
-
+ 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
-
+ 
     final router = GoRouter.of(context);
     final navigator = Navigator.of(context);
-    final biometricAvailable =
-        ref.read(biometricAvailableProvider).value ?? false;
-
+ 
     final ok = await ref.read(loginControllerProvider.notifier).submit(
           email: _email.text,
           password: _password.text,
-          enableBiometric: biometricAvailable && _enableBiometric,
         );
     if (!ok || !mounted) return;
-
+ 
     navigator.pop();
     router.go(AppRoutes.splash);
   }
-
+ 
   Future<void> _forgotPassword() async {
     final email = _email.text.trim();
     if (!email.contains('@')) {
@@ -100,15 +96,13 @@ class _LoginSheetState extends ConsumerState<LoginSheet> {
     }
     await ref.read(loginControllerProvider.notifier).requestPasswordReset(email);
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(loginControllerProvider);
-    final biometricAvailable =
-        ref.watch(biometricAvailableProvider).value ?? false;
     final ink = ThemeConfig.getPrimaryColor(context);
     final subtle = ThemeConfig.getSubtleTextColor(context);
-
+ 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: SingleChildScrollView(
@@ -201,31 +195,7 @@ class _LoginSheetState extends ConsumerState<LoginSheet> {
                 validator: (value) =>
                     (value ?? '').isEmpty ? 'Escribe tu contraseña.' : null,
               ),
-              if (biometricAvailable) ...[
-                const SizedBox(height: 10),
-                InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: () =>
-                      setState(() => _enableBiometric = !_enableBiometric),
-                  child: Row(
-                    children: [
-                      Checkbox(
-                        value: _enableBiometric,
-                        activeColor: AppColors.primary,
-                        checkColor: AppColors.onPrimary,
-                        onChanged: (value) =>
-                            setState(() => _enableBiometric = value ?? false),
-                      ),
-                      Text(
-                        'Activar ingreso con huella',
-                        style: ThemeConfig.getTextLight14(context)
-                            .copyWith(color: ink),
-                      ),
-                    ],
-                  ),
-                ),
-              ] else
-                const SizedBox(height: 18),
+              const SizedBox(height: 18),
               if (state.error != null || state.notice != null) ...[
                 Text(
                   state.error ?? state.notice!,
@@ -280,12 +250,12 @@ class _LoginSheetState extends ConsumerState<LoginSheet> {
     );
   }
 }
-
+ 
 class _FieldLabel extends StatelessWidget {
   const _FieldLabel(this.text);
-
+ 
   final String text;
-
+ 
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(left: 2, bottom: 6),
@@ -296,7 +266,7 @@ class _FieldLabel extends StatelessWidget {
         ),
       );
 }
-
+ 
 InputDecoration _inputDecoration(
   BuildContext context, {
   required String hint,
@@ -310,7 +280,7 @@ InputDecoration _inputDecoration(
       );
   final error =
       ThemeConfig.getCustomColor(context, AppColors.error, AppColors.darkError);
-
+ 
   return InputDecoration(
     hintText: hint,
     hintStyle: ThemeConfig.getTextHint13(context),
@@ -325,3 +295,4 @@ InputDecoration _inputDecoration(
     focusedErrorBorder: border(error, 1.6),
   );
 }
+ 
