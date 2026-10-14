@@ -1,0 +1,9 @@
+  flutter_launcher_icons:
+    image_path: "assets/icon/viewgo_sadmapp_icon.png"
+    android: "ic_launcher"
+    ios: true
+    remove_alpha_ios: true
+    min_sdk_android: 21
+    adaptive_icon_background: "#09090B"
+    adaptive_icon_foreground: "assets/icon/viewgo_sadmapp_icon_foreground.png"
+    adaptive_icon_monochrome: "assets/icon/viewgo_sadmapp_icon_monochrome.png"

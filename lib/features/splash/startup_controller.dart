@@ -5,7 +5,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:saviewgo/features/auth/app_lock_controller.dart';
 import 'package:saviewgo/features/auth/auth_repository.dart';
-import 'package:saviewgo/features/cities/cities_provider.dart';
+import 'package:saviewgo/features/cities/cities_providers.dart';
 import 'package:saviewgo/features/session/session_context.dart';
 import 'package:saviewgo/features/session/session_providers.dart';
 import 'package:saviewgo/features/session/session_repository.dart';

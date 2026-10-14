@@ -17,13 +17,30 @@ Future<void> initFirebase() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // En desarrollo los errores se muestran en consola como siempre. Si
+  // se reportaran como fatales, un error durante un hot restart podía
+  // cerrar la app por completo.
   await FirebaseCrashlytics.instance
       .setCrashlyticsCollectionEnabled(!kDebugMode);
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
+  if (!kDebugMode) {
+    FlutterError.onError =
+        FirebaseCrashlytics.instance.recordFlutterFatalError;
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  }
 
-  FirebaseFirestore.instance.settings = firestoreSettings;
+  applyFirestoreSettings();
+}
+
+/// En un hot restart el código Dart vuelve a empezar, pero Firestore
+/// sigue iniciado en el lado nativo y ya no acepta ajustes nuevos. Los
+/// que tenía siguen vigentes, así que el error se ignora.
+void applyFirestoreSettings() {
+  try {
+    FirebaseFirestore.instance.settings = firestoreSettings;
+  } catch (error) {
+    debugPrint('[Firestore] Ajustes no aplicados: $error');
+  }
 }

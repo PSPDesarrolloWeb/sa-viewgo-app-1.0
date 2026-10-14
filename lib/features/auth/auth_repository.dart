@@ -3,38 +3,38 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:saviewgo/core/firebase/firebase_init.dart';
 import 'package:saviewgo/features/auth/app_lock_controller.dart';
-import 'package:saviewgo/features/cities/cities_provider.dart';
+import 'package:saviewgo/features/cities/cities_providers.dart';
 import 'package:saviewgo/features/session/session_repository.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>(AuthRepository.new);
- 
+
 class AuthRepository {
   AuthRepository(this._ref);
- 
+
   final Ref _ref;
- 
+
   FirebaseAuth get _auth => FirebaseAuth.instance;
- 
+
   Future<void> signIn(String email, String password) =>
       _auth.signInWithEmailAndPassword(email: email.trim(), password: password);
- 
+
   Future<void> sendPasswordReset(String email) =>
       _auth.sendPasswordResetEmail(email: email.trim());
- 
+
   /// Cierra la sesión y borra del dispositivo lo que quedó en caché.
   Future<void> signOut() async {
     _ref.read(appLockProvider.notifier).lock();
     await _ref.read(sessionRepositoryProvider).clearRegisteredSession();
- 
+
     await _auth.signOut();
     _ref.invalidate(citiesProvider);
- 
+
     await FirebaseFirestore.instance.terminate();
     await FirebaseFirestore.instance.clearPersistence();
-    FirebaseFirestore.instance.settings = firestoreSettings;
+    applyFirestoreSettings();
   }
 }
- 
+
 /// Mensaje para el usuario a partir de un error de Firebase Auth.
 String authErrorMessage(Object error) {
   if (error is! FirebaseAuthException) {
@@ -53,4 +53,3 @@ String authErrorMessage(Object error) {
     _ => 'No se pudo iniciar sesión. Intenta de nuevo.',
   };
 }
- 
