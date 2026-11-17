@@ -44,18 +44,18 @@ class DashboardMetrics {
   const DashboardMetrics({
     required this.activeBusinesses,
     required this.ordersToday,
-    required this.activeCities,
-    required this.activeOperators,
+    this.activeCities = 0,
+    this.activeOperators,
   });
 
   final int activeBusinesses;
   final int ordersToday;
 
-  /// Se muestra al ver todas las ciudades.
+  /// Solo se muestra al ver todas las ciudades.
   final int activeCities;
 
-  /// Se muestra al ver una sola ciudad, en lugar de las ciudades.
-  final int activeOperators;
+  /// Solo se muestra al ver una sola ciudad; null = no aplica.
+  final int? activeOperators;
 }
 
 class ModuleStat {

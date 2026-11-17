@@ -8,6 +8,7 @@ import 'package:saviewgo/features/cities/cities_providers.dart';
 import 'package:saviewgo/features/cities/city_model.dart';
 import 'package:saviewgo/features/cities/city_scope_chip.dart';
 import 'package:saviewgo/features/dashboard/dashboard_providers.dart';
+import 'package:saviewgo/features/dashboard/widgets/dashboard_card.dart';
 import 'package:saviewgo/features/dashboard/dashboard_summary.dart';
 import 'package:saviewgo/features/dashboard/widgets/activity_list.dart';
 import 'package:saviewgo/features/dashboard/widgets/dashboard_header.dart';
@@ -99,7 +100,85 @@ class _DashboardBody extends ConsumerWidget {
           ),
           child: ActivityList(items: summary.activity),
         ),
+        gap,
+        const DashboardSection(
+          title: 'Consultas',
+          child: _QueriesCard(),
+        ),
       ],
+    );
+  }
+}
+
+/// Accesos a consultas de solo lectura.
+class _QueriesCard extends StatelessWidget {
+  const _QueriesCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return DashboardCard(
+      child: Column(
+        children: [
+          _QueryRow(
+            icon: Icons.receipt_long_outlined,
+            title: 'Pedidos',
+            subtitle: 'Ecommerce y gastronomía, con su historial',
+            onTap: () => context.push(AppRoutes.orders),
+          ),
+          Divider(height: 1, color: ThemeConfig.getBorderColor(context)),
+          _QueryRow(
+            icon: Icons.two_wheeler_outlined,
+            title: 'Entregadores en línea',
+            subtitle: 'Quién está disponible ahora',
+            onTap: () => context.push(AppRoutes.couriers),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QueryRow extends StatelessWidget {
+  const _QueryRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final subtle = ThemeConfig.getSubtleTextColor(context);
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        child: Row(
+          children: [
+            Icon(icon, size: 22, color: subtle),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: ThemeConfig.getTextBold13(context)),
+                  const SizedBox(height: 1),
+                  Text(
+                    subtitle,
+                    style: ThemeConfig.getTextLight12(context).copyWith(color: subtle),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, size: 20, color: subtle),
+          ],
+        ),
+      ),
     );
   }
 }

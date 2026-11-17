@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 enum MainTab {
   home('Inicio', Icons.home_outlined, Icons.home_rounded),
   businesses('Negocios', Icons.storefront_outlined, Icons.storefront_rounded),
+  transfers('Transferencias', Icons.account_balance_outlined, Icons.account_balance_rounded),
   alerts('Alertas', Icons.notifications_none_rounded, Icons.notifications_rounded),
-  cities('Ciudades', Icons.location_on_outlined, Icons.location_on_rounded),
   profile('Perfil', Icons.person_outline_rounded, Icons.person_rounded);
 
   const MainTab(this.label, this.icon, this.activeIcon);

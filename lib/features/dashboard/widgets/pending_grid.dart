@@ -23,16 +23,15 @@ extension on PendingType {
         PendingType.trialsExpiring => AppColors.septenary,
       };
 
-  /// Las pantallas destino leerán el filtro cuando existan.
+  /// Destino de cada pendiente. Negocios aún no filtra por "atrasados",
+  /// "sin sucursal" o "prueba por vencer": lleva a la lista completa. Los
+  /// módulos en prueba o suspendidos se ven en el detalle de cada negocio.
   String get location => switch (this) {
-        PendingType.paymentsToVerify =>
-          '${AppRoutes.alerts}?type=payment.pending_review',
-        PendingType.overdueSubscriptions =>
-          '${AppRoutes.alerts}?type=subscription.overdue',
-        PendingType.missingMainBranch =>
-          '${AppRoutes.businesses}?setupStatus=pending_branch',
+        PendingType.paymentsToVerify => AppRoutes.transfers,
+        PendingType.overdueSubscriptions ||
+        PendingType.missingMainBranch ||
         PendingType.trialsExpiring =>
-          '${AppRoutes.businesses}?filter=trial_expiring',
+          AppRoutes.businesses,
       };
 }
 

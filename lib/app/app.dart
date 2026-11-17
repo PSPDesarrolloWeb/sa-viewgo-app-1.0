@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:saviewgo/app/app_router.dart';
 import 'package:saviewgo/core/theme/theme.dart';
+import 'package:saviewgo/features/auth/app_lock_watcher.dart';
 import 'package:saviewgo/core/theme/theme_mode_provider.dart';
 
 class SAViewGoApp extends ConsumerWidget {
@@ -18,6 +19,8 @@ class SAViewGoApp extends ConsumerWidget {
       themeMode: ref.watch(themeModeProvider),
       // La primera pantalla la define el router: initialLocation = /splash.
       routerConfig: ref.watch(appRouterProvider),
+      // Candado local: bloquea de nuevo tras un rato en segundo plano.
+      builder: (context, child) => AppLockWatcher(child: child ?? const SizedBox.shrink()),
       locale: const Locale('es', 'EC'),
       supportedLocales: const [Locale('es', 'EC'), Locale('en', 'US')],
       localizationsDelegates: const [

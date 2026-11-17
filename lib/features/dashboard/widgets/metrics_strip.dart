@@ -3,7 +3,7 @@ import 'package:saviewgo/core/theme/theme_config.dart';
 import 'package:saviewgo/features/dashboard/dashboard_summary.dart';
 import 'package:saviewgo/features/dashboard/widgets/dashboard_card.dart';
 
-/// Tres métricas en una sola franja, separadas por divisores.
+/// Hasta tres métricas en una sola franja, separadas por divisores.
 class MetricsStrip extends StatelessWidget {
   const MetricsStrip({super.key, required this.metrics, required this.isAllCities});
 
@@ -15,9 +15,10 @@ class MetricsStrip extends StatelessWidget {
     final cells = [
       ('${metrics.activeBusinesses}', 'Negocios activos'),
       ('${metrics.ordersToday}', 'Pedidos hoy'),
-      isAllCities
-          ? ('${metrics.activeCities}', 'Ciudades')
-          : ('${metrics.activeOperators}', 'Operarios'),
+      if (isAllCities)
+        ('${metrics.activeCities}', 'Ciudades')
+      else if (metrics.activeOperators != null)
+        ('${metrics.activeOperators}', 'Entregadores'),
     ];
     final divider = VerticalDivider(
       width: 1,
