@@ -3,9 +3,8 @@ import 'package:saviewgo/features/cities/cities_providers.dart';
 import 'package:saviewgo/features/dashboard/dashboard_repository.dart';
 import 'package:saviewgo/features/dashboard/dashboard_summary.dart';
 
-/// Cambia a la implementación con Firestore cuando esté lista.
 final dashboardRepositoryProvider = Provider<DashboardRepository>(
-  (ref) => const MockDashboardRepository(),
+  (ref) => const FirestoreDashboardRepository(),
 );
 
 /// Resumen del Inicio para la ciudad en alcance. Se vuelve a pedir al

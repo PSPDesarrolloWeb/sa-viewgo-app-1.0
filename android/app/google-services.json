@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "627586801785-vgbh39p80scn353l0p7i2bb1rcl3cfhp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pspinnovations.logistic_viewgo",
+            "certificate_hash": "5e0302f288dda5051f22db15e491378555a3807b"
+          }
+        },
+        {
           "client_id": "627586801785-d7qpc5ibag5k9ngb0ukbf9lnkftr2bn3.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -32,10 +40,10 @@
               "client_type": 3
             },
             {
-              "client_id": "627586801785-43irj5o3u50m4us7rilrvs5pe83it4eq.apps.googleusercontent.com",
+              "client_id": "627586801785-021t4fmpspcee5a6ino2eor411dbdp00.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.pspinnovations.saviewgo"
+                "bundle_id": "com.viewgo.client"
               }
             }
           ]
@@ -68,10 +76,10 @@
               "client_type": 3
             },
             {
-              "client_id": "627586801785-43irj5o3u50m4us7rilrvs5pe83it4eq.apps.googleusercontent.com",
+              "client_id": "627586801785-021t4fmpspcee5a6ino2eor411dbdp00.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.pspinnovations.saviewgo"
+                "bundle_id": "com.viewgo.client"
               }
             }
           ]
@@ -104,10 +112,118 @@
               "client_type": 3
             },
             {
-              "client_id": "627586801785-43irj5o3u50m4us7rilrvs5pe83it4eq.apps.googleusercontent.com",
+              "client_id": "627586801785-021t4fmpspcee5a6ino2eor411dbdp00.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.pspinnovations.saviewgo"
+                "bundle_id": "com.viewgo.client"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:627586801785:android:b1680cf2f26db6363134a8",
+        "android_client_info": {
+          "package_name": "com.viewgo.admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "627586801785-d7qpc5ibag5k9ngb0ukbf9lnkftr2bn3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARDUeMStLqE0XxGKCYgbC19jKUTbAypME"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "627586801785-d7qpc5ibag5k9ngb0ukbf9lnkftr2bn3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "627586801785-021t4fmpspcee5a6ino2eor411dbdp00.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.viewgo.client"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:627586801785:android:d5edafc5eff9e0243134a8",
+        "android_client_info": {
+          "package_name": "com.viewgo.client"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "627586801785-d7qpc5ibag5k9ngb0ukbf9lnkftr2bn3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARDUeMStLqE0XxGKCYgbC19jKUTbAypME"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "627586801785-d7qpc5ibag5k9ngb0ukbf9lnkftr2bn3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "627586801785-021t4fmpspcee5a6ino2eor411dbdp00.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.viewgo.client"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:627586801785:android:6e6b81250fcabfa03134a8",
+        "android_client_info": {
+          "package_name": "com.viewgo.logistics"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "627586801785-d7qpc5ibag5k9ngb0ukbf9lnkftr2bn3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARDUeMStLqE0XxGKCYgbC19jKUTbAypME"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "627586801785-d7qpc5ibag5k9ngb0ukbf9lnkftr2bn3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "627586801785-021t4fmpspcee5a6ino2eor411dbdp00.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.viewgo.client"
               }
             }
           ]

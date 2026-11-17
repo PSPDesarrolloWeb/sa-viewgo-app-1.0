@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:saviewgo/core/auth/auth_providers.dart';
 import 'package:saviewgo/features/auth/app_lock_controller.dart';
 import 'package:saviewgo/features/auth/auth_repository.dart';
 import 'package:saviewgo/features/cities/cities_providers.dart';
@@ -67,6 +68,10 @@ class StartupController extends Notifier<StartupState> {
         return;
       }
  
+      // El token se acaba de renovar: los claims que ven las pantallas
+      // son los de ahora (un rol revocado deja de valer al desbloquear).
+      ref.invalidate(adminClaimsProvider);
+
       // Solo se llega aquí tras entrar o desbloquear; si no, el candado
       // local manda de vuelta al inicio.
       if (!ref.read(appLockProvider)) {

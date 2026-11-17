@@ -51,21 +51,21 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyARDUeMStLqE0XxGKCYgbC19jKUTbAypME',
-    appId: '1:627586801785:android:1a6c37e35924387a3134a8',
+    appId: '1:627586801785:android:b1680cf2f26db6363134a8',
     messagingSenderId: '627586801785',
     projectId: 'viewgocloud',
     databaseURL: 'https://viewgocloud-default-rtdb.firebaseio.com',
     storageBucket: 'viewgocloud.appspot.com',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBJ3gydBW7I9AVo-yIz2lQqkWRrQaEr2FQ',
-    appId: '1:627586801785:ios:9979fa1d5b9ec3b83134a8',
+    appId: '1:627586801785:ios:ed5c822234028c3e3134a8',
     messagingSenderId: '627586801785',
     projectId: 'viewgocloud',
     databaseURL: 'https://viewgocloud-default-rtdb.firebaseio.com',
     storageBucket: 'viewgocloud.appspot.com',
-    iosClientId: '627586801785-43irj5o3u50m4us7rilrvs5pe83it4eq.apps.googleusercontent.com',
-    iosBundleId: 'com.pspinnovations.saviewgo',
+    androidClientId: '627586801785-vgbh39p80scn353l0p7i2bb1rcl3cfhp.apps.googleusercontent.com',
+    iosClientId: '627586801785-85dq1g4mol1kio9hu82eob5474d9udi9.apps.googleusercontent.com',
+    iosBundleId: 'com.viewgo.admin',
   );
 }
