@@ -1,5 +1,5 @@
-// android/app/src/main/kotlin/com/pspinnovations/saviewgo/MainActivity.kt
-package com.pspinnovations.saviewgo
+// android/app/src/main/kotlin/com/viewgo/admin/MainActivity.kt
+package com.viewgo.admin
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
